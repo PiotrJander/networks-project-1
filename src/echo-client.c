@@ -32,10 +32,10 @@ int main(int argc, char *argv[]) {
     if (timestamp >= 71728934400LL) {
         fatal("Year is greater than 4242\n");
     }
-    // validate c
-    if (strlen(argv[2]) > 1) {
-        fatal("The second argument c must be a single character");
-    }
+//    // validate c
+//    if (strlen(argv[2]) > 1) {
+//        fatal("The second argument c must be a single character");
+//    }
 
 
     // 'converting' host/port in string to struct addrinfo
@@ -67,12 +67,16 @@ int main(int argc, char *argv[]) {
     if (sock < 0)
         syserr("socket");
 
-    int rcva_len1 = (socklen_t) sizeof(my_address);
+    socklen_t rcva_len1 = (socklen_t) sizeof(my_address);
     int c = connect(sock, (struct sockaddr *) &my_address, rcva_len1);
     if (c < 0) syserr("connect");
-    sleep(30);
 
-    for (i = 3; i < argc; i++) {
+//    send(sock, "hello", 6, 0);
+//    char bufferek[6];
+//    recv(sock, bufferek, 6, 0);
+//    printf("%s", bufferek);
+
+    for (i = 1; i < 2; i++) {
         len = strnlen(argv[i], BUFFER_SIZE);
         if (len == BUFFER_SIZE) {
             (void) fprintf(stderr, "ignoring long parameter %d\n", i);
@@ -97,9 +101,7 @@ int main(int argc, char *argv[]) {
         }
         (void) printf("read from socket: %zd bytes: %s\n", rcv_len, buffer);
     }
-
-    sleep(5);
-
+    
     if (close(sock) == -1) { //very rare errors can occur here, but then
         syserr("close"); //it's healthy to do the check
     }

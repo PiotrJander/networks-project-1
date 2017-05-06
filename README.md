@@ -1,18 +1,15 @@
 # zadanie1
 
 TODO
-* ./client timestamp c host [port]
-* let client take the args
 * client sends the datagram, and writes datagrams from server server in loop
-* how do we send a 64 bit number over network?
 * Jeżeli rok zawarty w znaczniku czasu jest mniejszy niż 1717 lub większy niż
   4242
 * error messages to stderr, datagrams from server to stdout
-* bad args -> stderr and exit code 1
 
+* in udp we send data over a socket
 
-timestamp: number in range
-c: string of length one
+maybe we can make it very simple and send hello hello over udp
 
-timestamp: we want to use strlol or even ll
-to have bigger ints, and also report
+okay now I can't even connect to the server
+
+try reverting to original state and change step by step
