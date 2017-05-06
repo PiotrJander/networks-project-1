@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include <inttypes.h>
+
 #include "err.h"
 #include "socket_wrappers.h"
 
@@ -14,7 +16,7 @@ static const uint16_t DEFAULT_PORT = (uint16_t) 20160;
 
 void getaddrinfo_w(const char *host, struct addrinfo **addr_result);
 
-void validate(int argc, char *argv[], uint64_t *timestamp, char *character, char **host, uint16_t *port);
+void validate(int argc, char **argv, uint64_t *timestamp, char *character, char **host, uint16_t *port);
 
 int main(int argc, char *argv[])
 {
@@ -45,7 +47,9 @@ int main(int argc, char *argv[])
     // print data
     printf("timestamp h: %llu\n", timestamp_h);
     printf("timestamp n: %llu\n", timestamp_n);
-    printf("timestamp n from buffer: %llu\n", (uint64_t) buffer);
+    uint64_t timestamp_p;
+    memcpy(&timestamp_p, buffer, sizeof(uint64_t));
+    printf("timestamp n from buffer: %llu\n", timestamp_p);
     printf("character: %c\n", buffer[BUFFER_SIZE - 1]);
 
     send_w(sock, buffer, BUFFER_SIZE);

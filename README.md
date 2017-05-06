@@ -11,7 +11,3 @@ test:
 
 tosortout:
 * what should buffer sizes be?
-
-okay now on the server try to decode that
-
-revert to last commit and see if we have errno 65

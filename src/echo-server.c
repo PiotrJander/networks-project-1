@@ -32,8 +32,10 @@ int main(int argc, char *argv[])
         ssize_t len = recvfrom_w(sock, buffer, sizeof(buffer), &client_address, &rcva_len);
 
 //        printf("read from socket: %zd bytes: %.*s\n", len, (int) len, buffer);
-        printf("timestamp n from buffer: %llu\n", (uint64_t) buffer);
-        printf("character: %c\n", buffer[BUFFER_SIZE - 1]);
+        uint64_t timestamp_p;
+        memcpy(&timestamp_p, buffer, sizeof(uint64_t));
+        printf("timestamp n from buffer: %llu\n", timestamp_p);
+        printf("character: %c\n", buffer[sizeof(uint64_t)]);
 
         for (int i = 0; i < 2; ++i) {
             sendto_w(sock, buffer, len, &client_address, snda_len);
