@@ -8,4 +8,8 @@ but let me try to:
     loop
 
 * now refactor server as well
+* ok now really go to server
+
+* what does it mean that server receives message of length 0?
+* one exchange = one datagram
 *

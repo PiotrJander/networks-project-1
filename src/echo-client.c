@@ -13,10 +13,6 @@ static const int BUFFER_SIZE = 1000;
 
 void getaddrinfo_w(const char *host, struct addrinfo **addr_result);
 
-void getaddrinfo_w(const char *host, struct addrinfo **addr_result);
-
-void get_my_address(const char *port, struct addrinfo *addr_result, struct sockaddr_in *my_address);
-
 int main(int argc, char *argv[])
 {
     if (argc < 3) {
@@ -25,11 +21,14 @@ int main(int argc, char *argv[])
 
     struct addrinfo *addr_result;
     getaddrinfo_w(argv[1], &addr_result);
+    freeaddrinfo(addr_result);
 
     struct sockaddr_in my_address;
-    get_my_address(argv[2], addr_result, &my_address);
+    in_addr_t s_addr = ((struct sockaddr_in *) (addr_result->ai_addr))->sin_addr.s_addr;
+    uint16_t port = (uint16_t) atoi(argv[2]);
+    get_address(&my_address, s_addr, port);
 
-    int sock = socket_w();
+    int sock = socket_w(PF_INET, SOCK_DGRAM);
     connect_w(sock, &my_address);
 
     char buffer[BUFFER_SIZE];
@@ -54,15 +53,6 @@ int main(int argc, char *argv[])
     close_w(sock);
 
     return 0;
-}
-
-void get_my_address(const char *port, struct addrinfo *addr_result, struct sockaddr_in *my_address)
-{
-    (*my_address).sin_family = AF_INET; // IPv4
-    (*my_address).sin_addr.s_addr = ((struct sockaddr_in *) (addr_result->ai_addr))->sin_addr.s_addr; // address IP
-    (*my_address).sin_port = htons((uint16_t) atoi(port)); // port from the command line
-
-    freeaddrinfo(addr_result);
 }
 
 void getaddrinfo_w(const char *host, struct addrinfo **addr_result)

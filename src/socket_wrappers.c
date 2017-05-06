@@ -9,20 +9,18 @@
 
 #include "err.h"
 
-ssize_t recv_w(int sock, char *buffer, size_t len)
+int socket_w(int domain, int type)
 {
-    ssize_t rcv_len = recv(sock, buffer, len, 0);
-    if (rcv_len < 0) {
-        syserr("read");
-    }
-    return rcv_len;
+    int sock = socket(domain, type, 0);
+    if (sock < 0)
+        syserr("socket");
+    return sock;
 }
 
-void send_w(int sock, size_t len1, const char *string)
+void bind_w(int sock, struct sockaddr_in *server_address)
 {
-    ssize_t snd_len1 = send(sock, string, len1, 0);
-    if (snd_len1 != (ssize_t) len1) {
-        syserr("partial / failed write");
+    if (bind(sock, (struct sockaddr *) server_address, (socklen_t) sizeof((*server_address))) < 0) {
+        syserr("bind");
     }
 }
 
@@ -33,12 +31,41 @@ void connect_w(int sock, struct sockaddr_in *my_address)
     if (c < 0) syserr("connect");
 }
 
-int socket_w()
+void send_w(int sock, size_t len1, const char *string)
 {
-    int sock = socket(PF_INET, SOCK_DGRAM, 0);
-    if (sock < 0)
-        syserr("socket");
-    return sock;
+    ssize_t snd_len1 = send(sock, string, len1, 0);
+    if (snd_len1 != (ssize_t) len1) {
+        syserr("partial / failed write");
+    }
+}
+
+ssize_t sendto_w(int sock, const char *buffer, ssize_t len, struct sockaddr_in *client_address, socklen_t snda_len)
+{
+    ssize_t snd_len = sendto(sock, buffer, (size_t) len, 0,
+                             (struct sockaddr *) client_address, snda_len);
+    if (snd_len != len) {
+        syserr("error on sending datagram to client socket");
+    }
+    return snd_len;
+}
+
+ssize_t recv_w(int sock, char *buffer, size_t len)
+{
+    ssize_t rcv_len = recv(sock, buffer, len, 0);
+    if (rcv_len < 0) {
+        syserr("read");
+    }
+    return rcv_len;
+}
+
+ssize_t recvfrom_w(int sock, char buffer[], size_t len, struct sockaddr_in *client_address, socklen_t *rcva_len)
+{
+    ssize_t recv_len = recvfrom(sock, buffer, len, 0,
+                           (struct sockaddr *) &client_address, rcva_len);
+    if (recv_len < 0) {
+        syserr("error on datagram from client socket");
+    }
+    return recv_len;
 }
 
 void close_w(int sock)
@@ -46,4 +73,11 @@ void close_w(int sock)
     if (close(sock) == -1) {
         syserr("close");
     }
+}
+
+void get_address(struct sockaddr_in *address, in_addr_t s_addr, uint16_t port)
+{
+    (*address).sin_family = AF_INET;
+    (*address).sin_addr.s_addr = s_addr;  // address IP / listening on all interfaces
+    (*address).sin_port = htons(port);
 }

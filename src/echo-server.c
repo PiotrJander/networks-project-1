@@ -6,54 +6,33 @@
 #include <unistd.h>
 
 #include "err.h"
+#include "socket_wrappers.h"
 
-#define BUFFER_SIZE   1000
-#define PORT_NUM     10001
+static const int BUFFER_SIZE = 1000;
+static const int PORT_NUM = 10001;
 
-int main(int argc, char *argv[]) {
-	int sock;
-	int flags, sflags;
-	struct sockaddr_in server_address;
-	struct sockaddr_in client_address;
 
-	char buffer[BUFFER_SIZE];
-	socklen_t snda_len, rcva_len;
-	ssize_t len, snd_len;
+int main(int argc, char *argv[])
+{
+    struct sockaddr_in client_address;
+    socklen_t snda_len = (socklen_t) sizeof(client_address);
+    socklen_t rcva_len = (socklen_t) sizeof(client_address);
+    char buffer[BUFFER_SIZE];
 
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sock < 0)
-		syserr("socket");
+    int sock = socket_w(PF_INET, SOCK_DGRAM);
 
-	server_address.sin_family = AF_INET; // IPv4
-	server_address.sin_addr.s_addr = htonl(INADDR_ANY); // listening on all interfaces
-	server_address.sin_port = htons(PORT_NUM); // default port for receiving is PORT_NUM
+    struct sockaddr_in server_address;
+    get_address(&server_address, INADDR_ANY, PORT_NUM);
 
-	// bind the socket to a concrete address
-	if (bind(sock, (struct sockaddr *) &server_address,
-			(socklen_t) sizeof(server_address)) < 0)
-		syserr("bind");
+    bind_w(sock, &server_address);
 
-	snda_len = (socklen_t) sizeof(client_address);
-	for (;;) {
-		do {
-			rcva_len = (socklen_t) sizeof(client_address);
-			flags = 0; // we do not request anything special
-			len = recvfrom(sock, buffer, sizeof(buffer), flags,
-					(struct sockaddr *) &client_address, &rcva_len);
-			if (len < 0)
-				syserr("error on datagram from client socket");
-			else {
-				(void) printf("read from socket: %zd bytes: %.*s\n", len,
-						(int) len, buffer);
-				sflags = 0;
-				snd_len = sendto(sock, buffer, (size_t) len, sflags,
-						(struct sockaddr *) &client_address, snda_len);
-				if (snd_len != len)
-					syserr("error on sending datagram to client socket");
-			}
-		} while (len > 0);
-		(void) printf("finished exchange\n");
-	}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    for (;;) {
+        ssize_t len = recvfrom_w(sock, buffer, BUFFER_SIZE, &client_address, &rcva_len);
+        printf("read from socket: %zd bytes: %.*s\n", len, (int) len, buffer);
 
-	return 0;
+        sendto_w(sock, buffer, len, &client_address, snda_len);
+    }
+#pragma clang diagnostic pop
 }
