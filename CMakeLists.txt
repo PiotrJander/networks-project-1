@@ -3,5 +3,5 @@ project(zadanie1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES bin/echo-client.c bin/echo-server.c bin/err.h bin/err.c)
+set(SOURCE_FILES src/echo-client.c src/echo-server.c src/err.h src/err.c src/socket_wrappers.c src/socket_wrappers.h)
 add_executable(zadanie1 ${SOURCE_FILES})

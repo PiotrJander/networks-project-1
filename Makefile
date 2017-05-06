@@ -10,13 +10,17 @@ OBJ_FILES=$(addprefix bin/,$(notdir $(C_FILES:.c=.o)))
 bin/%.o: src/%.c
 	$(CC) $(CC_FLAGS) -c -o $@ $<
 
-# bin/echo-server.o bin/echo-client.o bin/err.o: src/err.h
-
-echo-server: bin/echo-server.o bin/err.o
+echo-server: bin/echo-server.o bin/err.o bin/socket_wrappers.o
 	$(CC) $(LFLAGS) $^ -o bin/$@
 
-echo-client: bin/echo-client.o bin/err.o
+echo-client: bin/echo-client.o bin/err.o bin/socket_wrappers.o
 	$(CC) $(LFLAGS) $^ -o bin/$@
+
+server: echo-server
+	bin/echo-server
+
+client: echo-client
+	bin/echo-client localhost 10001 hello world
 
 .PHONY: clean TARGET
 clean:

@@ -20,11 +20,9 @@ int main(int argc, char *argv[]) {
 	socklen_t snda_len, rcva_len;
 	ssize_t len, snd_len;
 
-	sock = socket(AF_INET, SOCK_DGRAM, 0); // creating IPv4 UDP socket
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0)
 		syserr("socket");
-	// after socket() call; we should close(sock) on any execution path;
-	// since all execution paths exit immediately, sock would be closed when program terminates
 
 	server_address.sin_family = AF_INET; // IPv4
 	server_address.sin_addr.s_addr = htonl(INADDR_ANY); // listening on all interfaces

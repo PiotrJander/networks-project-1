@@ -7,24 +7,15 @@
 #include <stdlib.h>
 
 #include "err.h"
+#include "socket_wrappers.h"
 
-#define BUFFER_SIZE 1000
+static const int BUFFER_SIZE = 1000;
 
-void getaddrinfo_w(char *const *argv, struct addrinfo **addr_result);
+void getaddrinfo_w(const char *host, struct addrinfo **addr_result);
 
-void close_w(int sock);
+void getaddrinfo_w(const char *host, struct addrinfo **addr_result);
 
-void getaddrinfo_w(char *const *argv, struct addrinfo **addr_result);
-
-void get_my_address(char *const *argv, struct addrinfo *addr_result, struct sockaddr_in *my_address);
-
-int socket_w();
-
-void connect_w(int sock, struct sockaddr_in *my_address);
-
-void send_w(int sock, size_t len1, const char *string);
-
-ssize_t recv_w(int sock, char *buffer, size_t len);
+void get_my_address(const char *port, struct addrinfo *addr_result, struct sockaddr_in *my_address);
 
 int main(int argc, char *argv[])
 {
@@ -33,10 +24,10 @@ int main(int argc, char *argv[])
     }
 
     struct addrinfo *addr_result;
-    getaddrinfo_w(argv, &addr_result);
+    getaddrinfo_w(argv[1], &addr_result);
 
     struct sockaddr_in my_address;
-    get_my_address(argv, addr_result, &my_address);
+    get_my_address(argv[2], addr_result, &my_address);
 
     int sock = socket_w();
     connect_w(sock, &my_address);
@@ -65,56 +56,16 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-ssize_t recv_w(int sock, char *buffer, size_t len)
-{
-    ssize_t rcv_len = recv(sock, buffer, len, 0);
-    if (rcv_len < 0) {
-        syserr("read");
-    }
-    return rcv_len;
-}
-
-void send_w(int sock, size_t len1, const char *string)
-{
-    ssize_t snd_len1 = send(sock, string, len1, 0);
-    if (snd_len1 != (ssize_t) len1) {
-        syserr("partial / failed write");
-    }
-}
-
-void connect_w(int sock, struct sockaddr_in *my_address)
-{
-    socklen_t rcva_len1 = (socklen_t) sizeof((*my_address));
-    int c = connect(sock, (struct sockaddr *) my_address, rcva_len1);
-    if (c < 0) syserr("connect");
-}
-
-int socket_w()
-{
-    int sock = socket(PF_INET, SOCK_DGRAM, 0);
-    if (sock < 0)
-        syserr("socket");
-    return sock;
-}
-
-void get_my_address(char *const *argv, struct addrinfo *addr_result, struct sockaddr_in *my_address)
+void get_my_address(const char *port, struct addrinfo *addr_result, struct sockaddr_in *my_address)
 {
     (*my_address).sin_family = AF_INET; // IPv4
-    (*my_address).sin_addr.s_addr =
-            ((struct sockaddr_in *) (addr_result->ai_addr))->sin_addr.s_addr; // address IP
-    (*my_address).sin_port = htons((uint16_t) atoi(argv[2])); // port from the command line
+    (*my_address).sin_addr.s_addr = ((struct sockaddr_in *) (addr_result->ai_addr))->sin_addr.s_addr; // address IP
+    (*my_address).sin_port = htons((uint16_t) atoi(port)); // port from the command line
 
     freeaddrinfo(addr_result);
 }
 
-void close_w(int sock)
-{
-    if (close(sock) == -1) {
-        syserr("close");
-    }
-}
-
-void getaddrinfo_w(char *const *argv, struct addrinfo **addr_result)
+void getaddrinfo_w(const char *host, struct addrinfo **addr_result)
 {
     struct addrinfo addr_hints;
     memset(&addr_hints, 0, sizeof(struct addrinfo));
@@ -126,7 +77,7 @@ void getaddrinfo_w(char *const *argv, struct addrinfo **addr_result)
     addr_hints.ai_addr = NULL;
     addr_hints.ai_canonname = NULL;
     addr_hints.ai_next = NULL;
-    if (getaddrinfo(argv[1], NULL, &addr_hints, addr_result) != 0) {
+    if (getaddrinfo(host, NULL, &addr_hints, addr_result) != 0) {
         syserr("getaddrinfo");
     }
 }
