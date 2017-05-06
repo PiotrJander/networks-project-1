@@ -6,12 +6,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include <inttypes.h>
-
 #include "err.h"
 #include "socket_wrappers.h"
 
-static const size_t BUFFER_SIZE = sizeof(uint64_t) + sizeof(char);
+static const size_t SEND_BUFFER_SIZE = sizeof(uint64_t) + sizeof(char);
+static const int RECV_BUFFER_SIZE = 534;
 static const uint16_t DEFAULT_PORT = (uint16_t) 20160;
 
 void getaddrinfo_w(const char *host, struct addrinfo **addr_result);
@@ -39,29 +38,26 @@ int main(int argc, char *argv[])
     connect_w(sock, &my_address);
 
     // write data to buffer
-    char buffer[BUFFER_SIZE];
+    char send_buffer[SEND_BUFFER_SIZE];
+    char recv_buffer[RECV_BUFFER_SIZE];
     uint64_t timestamp_n = htonll(timestamp_h);
-    memcpy(&timestamp_n, buffer, sizeof(uint64_t));
-    buffer[BUFFER_SIZE - 1] = character;
+    memcpy(send_buffer, &timestamp_n, sizeof(uint64_t));
+    send_buffer[SEND_BUFFER_SIZE - 1] = character;
 
-    // print data
-    printf("timestamp h: %llu\n", timestamp_h);
-    printf("timestamp n: %llu\n", timestamp_n);
-    uint64_t timestamp_p;
-    memcpy(&timestamp_p, buffer, sizeof(uint64_t));
-    printf("timestamp n from buffer: %llu\n", timestamp_p);
-    printf("character: %c\n", buffer[BUFFER_SIZE - 1]);
-
-    send_w(sock, buffer, BUFFER_SIZE);
-    printf("sending to socket: %s\n", buffer);
+    send_w(sock, send_buffer, SEND_BUFFER_SIZE);
+    printf("sending to socket: %s\n", send_buffer);
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     for (;;) {
-        memset(buffer, 0, sizeof(buffer));
-        size_t len = (size_t) sizeof(buffer) - 1;
-        recv_w(sock, buffer, len);
-        printf("%s", buffer);  // TODO maybe use write here
+//        memset(send_buffer, 0, sizeof(send_buffer));
+//        size_t len = (size_t) sizeof(send_buffer) - 1;
+
+        recv_w(sock, recv_buffer, RECV_BUFFER_SIZE);
+        uint64_t timestamp_rcv;
+        memcpy(&timestamp_rcv, recv_buffer, sizeof(uint64_t));
+        timestamp_rcv = ntohll(timestamp_rcv);
+        printf("%llu%s", timestamp_rcv, recv_buffer + sizeof(uint64_t));
     }
 #pragma clang diagnostic pop
 
