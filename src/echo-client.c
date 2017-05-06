@@ -10,11 +10,11 @@
 
 #define BUFFER_SIZE 1000
 
-void getaddrinfo_w(char *const *argv, struct addrinfo *addr_hints, struct addrinfo **addr_result);
+void getaddrinfo_w(char *const *argv, struct addrinfo **addr_result);
 
 void close_w(int sock);
 
-void getaddrinfo_w(char *const *argv, struct addrinfo *addr_hints, struct addrinfo **addr_result);
+void getaddrinfo_w(char *const *argv, struct addrinfo **addr_result);
 
 void get_my_address(char *const *argv, struct addrinfo *addr_result, struct sockaddr_in *my_address);
 
@@ -28,29 +28,23 @@ ssize_t recv_w(int sock, char *buffer, size_t len);
 
 int main(int argc, char *argv[])
 {
-    int sock;
-    struct addrinfo addr_hints;
-    struct addrinfo *addr_result;
-
-    int i;
-    char buffer[BUFFER_SIZE];
-    size_t len;
-    ssize_t snd_len, rcv_len;
-    struct sockaddr_in my_address;
-    struct sockaddr_in srvr_address;
-    socklen_t rcva_len;
-
     if (argc < 3) {
         fatal("Usage: %s host port message ...\n", argv[0]);
     }
 
-    getaddrinfo_w(argv, &addr_hints, &addr_result);
+    struct addrinfo *addr_result;
+    getaddrinfo_w(argv, &addr_result);
+
+    struct sockaddr_in my_address;
     get_my_address(argv, addr_result, &my_address);
-    sock = socket_w();
+
+    int sock = socket_w();
     connect_w(sock, &my_address);
 
-    for (i = 3; i < argc; i++) {
-        
+    char buffer[BUFFER_SIZE];
+
+    for (int i = 3; i < argc; i++) {
+
         size_t len1 = strnlen(argv[i], BUFFER_SIZE);
         if (len1 == BUFFER_SIZE) {
             fatal("Buffer overflow");
@@ -60,8 +54,8 @@ int main(int argc, char *argv[])
         printf("sending to socket: %s\n", argv[i]);
 
         memset(buffer, 0, sizeof(buffer));
-        len = (size_t) sizeof(buffer) - 1;
-        rcv_len = recv_w(sock, buffer, len);
+        size_t len = (size_t) sizeof(buffer) - 1;
+        ssize_t rcv_len = recv_w(sock, buffer, len);
 
         printf("read from socket: %zd bytes: %s\n", rcv_len, buffer);
     }
@@ -75,8 +69,8 @@ ssize_t recv_w(int sock, char *buffer, size_t len)
 {
     ssize_t rcv_len = recv(sock, buffer, len, 0);
     if (rcv_len < 0) {
-            syserr("read");
-        }
+        syserr("read");
+    }
     return rcv_len;
 }
 
@@ -84,8 +78,8 @@ void send_w(int sock, size_t len1, const char *string)
 {
     ssize_t snd_len1 = send(sock, string, len1, 0);
     if (snd_len1 != (ssize_t) len1) {
-            syserr("partial / failed write");
-        }
+        syserr("partial / failed write");
+    }
 }
 
 void connect_w(int sock, struct sockaddr_in *my_address)
@@ -120,18 +114,19 @@ void close_w(int sock)
     }
 }
 
-void getaddrinfo_w(char *const *argv, struct addrinfo *addr_hints, struct addrinfo **addr_result)
+void getaddrinfo_w(char *const *argv, struct addrinfo **addr_result)
 {
-    (void) memset(addr_hints, 0, sizeof(struct addrinfo));
-    (*addr_hints).ai_family = AF_INET; // IPv4
-    (*addr_hints).ai_socktype = SOCK_DGRAM;
-    (*addr_hints).ai_protocol = IPPROTO_UDP;
-    (*addr_hints).ai_flags = 0;
-    (*addr_hints).ai_addrlen = 0;
-    (*addr_hints).ai_addr = NULL;
-    (*addr_hints).ai_canonname = NULL;
-    (*addr_hints).ai_next = NULL;
-    if (getaddrinfo(argv[1], NULL, addr_hints, addr_result) != 0) {
+    struct addrinfo addr_hints;
+    memset(&addr_hints, 0, sizeof(struct addrinfo));
+    addr_hints.ai_family = AF_INET; // IPv4
+    addr_hints.ai_socktype = SOCK_DGRAM;
+    addr_hints.ai_protocol = IPPROTO_UDP;
+    addr_hints.ai_flags = 0;
+    addr_hints.ai_addrlen = 0;
+    addr_hints.ai_addr = NULL;
+    addr_hints.ai_canonname = NULL;
+    addr_hints.ai_next = NULL;
+    if (getaddrinfo(argv[1], NULL, &addr_hints, addr_result) != 0) {
         syserr("getaddrinfo");
     }
 }
