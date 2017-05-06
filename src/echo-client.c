@@ -22,12 +22,17 @@ int socket_w();
 
 void connect_w(int sock, struct sockaddr_in *my_address);
 
-int main(int argc, char *argv[]) {
+void send_w(int sock, size_t len1, const char *string);
+
+ssize_t recv_w(int sock, char *buffer, size_t len);
+
+int main(int argc, char *argv[])
+{
     int sock;
     struct addrinfo addr_hints;
     struct addrinfo *addr_result;
 
-    int i, flags, sflags;
+    int i;
     char buffer[BUFFER_SIZE];
     size_t len;
     ssize_t snd_len, rcv_len;
@@ -45,36 +50,42 @@ int main(int argc, char *argv[]) {
     connect_w(sock, &my_address);
 
     for (i = 3; i < argc; i++) {
-        len = strnlen(argv[i], BUFFER_SIZE);
-        if (len == BUFFER_SIZE) {
-            (void) fprintf(stderr, "ignoring long parameter %d\n", i);
-            continue;
+        
+        size_t len1 = strnlen(argv[i], BUFFER_SIZE);
+        if (len1 == BUFFER_SIZE) {
+            fatal("Buffer overflow");
         }
-        (void) printf("sending to socket: %s\n", argv[i]);
-        sflags = 0;
-        rcva_len = (socklen_t) sizeof(my_address);
-        snd_len = sendto(sock, argv[i], len, sflags,
-                         (struct sockaddr *) &my_address, rcva_len);
-        if (snd_len != (ssize_t) len) {
-            syserr("partial / failed write");
-        }
+        send_w(sock, len1, argv[i]);
 
-        (void) memset(buffer, 0, sizeof(buffer));
-        flags = 0;
+        printf("sending to socket: %s\n", argv[i]);
+
+        memset(buffer, 0, sizeof(buffer));
         len = (size_t) sizeof(buffer) - 1;
-        rcva_len = (socklen_t) sizeof(srvr_address);
-        rcv_len = recvfrom(sock, buffer, len, flags,
-                           (struct sockaddr *) &srvr_address, &rcva_len);
+        rcv_len = recv_w(sock, buffer, len);
 
-        if (rcv_len < 0) {
-            syserr("read");
-        }
-        (void) printf("read from socket: %zd bytes: %s\n", rcv_len, buffer);
+        printf("read from socket: %zd bytes: %s\n", rcv_len, buffer);
     }
 
     close_w(sock);
 
     return 0;
+}
+
+ssize_t recv_w(int sock, char *buffer, size_t len)
+{
+    ssize_t rcv_len = recv(sock, buffer, len, 0);
+    if (rcv_len < 0) {
+            syserr("read");
+        }
+    return rcv_len;
+}
+
+void send_w(int sock, size_t len1, const char *string)
+{
+    ssize_t snd_len1 = send(sock, string, len1, 0);
+    if (snd_len1 != (ssize_t) len1) {
+            syserr("partial / failed write");
+        }
 }
 
 void connect_w(int sock, struct sockaddr_in *my_address)
@@ -96,7 +107,7 @@ void get_my_address(char *const *argv, struct addrinfo *addr_result, struct sock
 {
     (*my_address).sin_family = AF_INET; // IPv4
     (*my_address).sin_addr.s_addr =
-            ((struct sockaddr_in*) (addr_result->ai_addr))->sin_addr.s_addr; // address IP
+            ((struct sockaddr_in *) (addr_result->ai_addr))->sin_addr.s_addr; // address IP
     (*my_address).sin_port = htons((uint16_t) atoi(argv[2])); // port from the command line
 
     freeaddrinfo(addr_result);
