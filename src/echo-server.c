@@ -30,7 +30,10 @@ int main(int argc, char *argv[])
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     for (;;) {
         ssize_t len = recvfrom_w(sock, buffer, sizeof(buffer), &client_address, &rcva_len);
-        printf("read from socket: %zd bytes: %.*s\n", len, (int) len, buffer);
+
+//        printf("read from socket: %zd bytes: %.*s\n", len, (int) len, buffer);
+        printf("timestamp n from buffer: %llu\n", (uint64_t) buffer);
+        printf("character: %c\n", buffer[BUFFER_SIZE - 1]);
 
         for (int i = 0; i < 2; ++i) {
             sendto_w(sock, buffer, len, &client_address, snda_len);

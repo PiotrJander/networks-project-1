@@ -22,7 +22,7 @@ server: echo-server
 
 .PHONY: client
 client: echo-client
-	bin/echo-client localhost 10001 hello world
+	bin/echo-client 1234 a localhost 10001
 
 # .PHONY: test
 # test: echo-server echo-client
