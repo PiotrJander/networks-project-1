@@ -19,7 +19,7 @@ void bind_w(int sock, struct sockaddr_in *server_address);
 
 void connect_w(int sock, struct sockaddr_in *my_address);
 
-void send_w(int sock, size_t len1, const char *string);
+void send_w(int sock, const char *string, size_t len1);
 
 ssize_t sendto_w(int sock, const char *buffer, ssize_t len, struct sockaddr_in *client_address, socklen_t snda_len);
 

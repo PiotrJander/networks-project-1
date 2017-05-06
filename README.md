@@ -7,9 +7,6 @@ but let me try to:
 * client already listen for the server, but we would like to listen in infinite
     loop
 
-* now refactor server as well
-* ok now really go to server
+* then server echoes a file as well
 
-* what does it mean that server receives message of length 0?
-* one exchange = one datagram
-*
+* then client might send msg as specified

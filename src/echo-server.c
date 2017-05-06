@@ -32,7 +32,9 @@ int main(int argc, char *argv[])
         ssize_t len = recvfrom_w(sock, buffer, sizeof(buffer), &client_address, &rcva_len);
         printf("read from socket: %zd bytes: %.*s\n", len, (int) len, buffer);
 
-        sendto_w(sock, buffer, len, &client_address, snda_len);
+        for (int i = 0; i < 2; ++i) {
+            sendto_w(sock, buffer, len, &client_address, snda_len);
+        }
 
     }
 #pragma clang diagnostic pop

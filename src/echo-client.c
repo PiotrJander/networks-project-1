@@ -33,26 +33,23 @@ int main(int argc, char *argv[])
 
     char buffer[BUFFER_SIZE];
 
-    for (int i = 3; i < argc; i++) {
+    char* foo = "foo bar\n";
+    send_w(sock, foo, 8);
 
-        size_t len1 = strnlen(argv[i], BUFFER_SIZE);
-        if (len1 == BUFFER_SIZE) {
-            fatal("Buffer overflow");
-        }
-        send_w(sock, len1, argv[i]);
+    printf("sending to socket: %s\n", foo);
 
-        printf("sending to socket: %s\n", argv[i]);
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    for (;;) {
         memset(buffer, 0, sizeof(buffer));
         size_t len = (size_t) sizeof(buffer) - 1;
-        ssize_t rcv_len = recv_w(sock, buffer, len);
-
-        printf("read from socket: %zd bytes: %s\n", rcv_len, buffer);
+        recv_w(sock, buffer, len);
+        printf("%s", buffer);
     }
+#pragma clang diagnostic pop
 
-    close_w(sock);
-
-    return 0;
+//    close_w(sock);
+//    return 0;
 }
 
 void getaddrinfo_w(const char *host, struct addrinfo **addr_result)

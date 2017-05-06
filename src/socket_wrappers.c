@@ -31,7 +31,7 @@ void connect_w(int sock, struct sockaddr_in *my_address)
     if (c < 0) syserr("connect");
 }
 
-void send_w(int sock, size_t len1, const char *string)
+void send_w(int sock, const char *string, size_t len1)
 {
     ssize_t snd_len1 = send(sock, string, len1, 0);
     if (snd_len1 != (ssize_t) len1) {
