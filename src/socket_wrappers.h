@@ -25,7 +25,7 @@ ssize_t sendto_w(int sock, const char *buffer, ssize_t len, struct sockaddr_in *
 
 ssize_t recv_w(int sock, char *buffer, size_t len);
 
-ssize_t recvfrom_w(int sock, char buffer[], size_t len, struct sockaddr_in *client_address, socklen_t *rcva_len);
+ssize_t recvfrom_w(int sock, char buffer[], size_t buffer_len, struct sockaddr_in *client_address, socklen_t *rcva_len);
 
 void close_w(int sock);
 

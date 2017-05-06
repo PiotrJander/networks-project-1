@@ -16,11 +16,18 @@ echo-server: bin/echo-server.o bin/err.o bin/socket_wrappers.o
 echo-client: bin/echo-client.o bin/err.o bin/socket_wrappers.o
 	$(CC) $(LFLAGS) $^ -o bin/$@
 
+.PHONY: server
 server: echo-server
 	bin/echo-server
 
+.PHONY: client
 client: echo-client
 	bin/echo-client localhost 10001 hello world
+
+# .PHONY: test
+# test: echo-server echo-client
+#    bin/echo-server
+#    bin/echo-client localhost 10001 hello world
 
 .PHONY: clean TARGET
 clean:

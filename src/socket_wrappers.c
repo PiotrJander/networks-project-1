@@ -58,14 +58,14 @@ ssize_t recv_w(int sock, char *buffer, size_t len)
     return rcv_len;
 }
 
-ssize_t recvfrom_w(int sock, char buffer[], size_t len, struct sockaddr_in *client_address, socklen_t *rcva_len)
+ssize_t recvfrom_w(int sock, char buffer[], size_t buffer_len, struct sockaddr_in *client_address, socklen_t *rcva_len)
 {
-    ssize_t recv_len = recvfrom(sock, buffer, len, 0,
-                           (struct sockaddr *) &client_address, rcva_len);
-    if (recv_len < 0) {
+    ssize_t len = recvfrom(sock, buffer, buffer_len, 0,
+                           (struct sockaddr *) client_address, rcva_len);
+    if (len < 0) {
         syserr("error on datagram from client socket");
     }
-    return recv_len;
+    return len;
 }
 
 void close_w(int sock)
