@@ -10,7 +10,7 @@
 #include "socket_wrappers.h"
 
 static const size_t SEND_BUFFER_SIZE = sizeof(uint64_t) + sizeof(char);
-static const int RECV_BUFFER_SIZE = 534;
+static const int RECV_BUFFER_SIZE = 65535;
 static const uint16_t DEFAULT_PORT = (uint16_t) 20160;
 
 void validate(int argc, char **argv, uint64_t *timestamp, char *character, char **host, uint16_t *port);
