@@ -13,8 +13,6 @@ static const size_t SEND_BUFFER_SIZE = sizeof(uint64_t) + sizeof(char);
 static const int RECV_BUFFER_SIZE = 534;
 static const uint16_t DEFAULT_PORT = (uint16_t) 20160;
 
-void getaddrinfo_w(const char *host, struct addrinfo **addr_result);
-
 void validate(int argc, char **argv, uint64_t *timestamp, char *character, char **host, uint16_t *port);
 
 int main(int argc, char *argv[])
@@ -26,60 +24,57 @@ int main(int argc, char *argv[])
     uint16_t port;
     validate(argc, argv, &timestamp_h, &character, &host, &port);
 
+    // addrinfo
     struct addrinfo *addr_result;
     getaddrinfo_w(host, &addr_result);
     freeaddrinfo(addr_result);
 
+    // make address
     struct sockaddr_in my_address;
     in_addr_t s_addr = ((struct sockaddr_in *) (addr_result->ai_addr))->sin_addr.s_addr;
     get_address(&my_address, s_addr, port);
 
+    // socket and connect
     int sock = socket_w(PF_INET, SOCK_DGRAM);
     connect_w(sock, &my_address);
 
     // write data to buffer
     char send_buffer[SEND_BUFFER_SIZE];
-    char recv_buffer[RECV_BUFFER_SIZE];
     uint64_t timestamp_n = htonll(timestamp_h);
     memcpy(send_buffer, &timestamp_n, sizeof(uint64_t));
-    send_buffer[SEND_BUFFER_SIZE - 1] = character;
+    send_buffer[sizeof(uint64_t)] = character;
 
+    // send
     send_w(sock, send_buffer, SEND_BUFFER_SIZE);
-    printf("sending to socket: %s\n", send_buffer);
+
+    // recv buffer decl
+    char recv_buffer[RECV_BUFFER_SIZE];
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
-    for (;;) {
-//        memset(send_buffer, 0, sizeof(send_buffer));
-//        size_t len = (size_t) sizeof(send_buffer) - 1;
 
-        recv_w(sock, recv_buffer, RECV_BUFFER_SIZE);
+    // listen to server in infinite loop
+    for (;;) {
+        // recv
+        ssize_t recv_len = recv_w(sock, recv_buffer, RECV_BUFFER_SIZE);
+
+        // ignore invalid (too short) datagrams
+        if (recv_len < SEND_BUFFER_SIZE) {
+            fprintf(stderr, "Received an invalid datagram of length less than 9\n");
+            continue;
+        }
+
+        // parse timestamp
         uint64_t timestamp_rcv;
         memcpy(&timestamp_rcv, recv_buffer, sizeof(uint64_t));
         timestamp_rcv = ntohll(timestamp_rcv);
+
+        // print message
         printf("%llu%s", timestamp_rcv, recv_buffer + sizeof(uint64_t));
     }
+
 #pragma clang diagnostic pop
 
-//    close_w(sock);
-//    return 0;
-}
-
-void getaddrinfo_w(const char *host, struct addrinfo **addr_result)
-{
-    struct addrinfo addr_hints;
-    memset(&addr_hints, 0, sizeof(struct addrinfo));
-    addr_hints.ai_family = AF_INET; // IPv4
-    addr_hints.ai_socktype = SOCK_DGRAM;
-    addr_hints.ai_protocol = IPPROTO_UDP;
-    addr_hints.ai_flags = 0;
-    addr_hints.ai_addrlen = 0;
-    addr_hints.ai_addr = NULL;
-    addr_hints.ai_canonname = NULL;
-    addr_hints.ai_next = NULL;
-    if (getaddrinfo(host, NULL, &addr_hints, addr_result) != 0) {
-        syserr("getaddrinfo");
-    }
 }
 
 void validate(int argc, char **argv, uint64_t *timestamp, char *character, char **host, uint16_t *port)

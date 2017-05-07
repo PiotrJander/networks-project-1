@@ -9,6 +9,30 @@
 
 #include "err.h"
 
+void getaddrinfo_w(const char *host, struct addrinfo **addr_result)
+{
+    struct addrinfo addr_hints;
+    memset(&addr_hints, 0, sizeof(struct addrinfo));
+    addr_hints.ai_family = AF_INET; // IPv4
+    addr_hints.ai_socktype = SOCK_DGRAM;
+    addr_hints.ai_protocol = IPPROTO_UDP;
+    addr_hints.ai_flags = 0;
+    addr_hints.ai_addrlen = 0;
+    addr_hints.ai_addr = NULL;
+    addr_hints.ai_canonname = NULL;
+    addr_hints.ai_next = NULL;
+    if (getaddrinfo(host, NULL, &addr_hints, addr_result) != 0) {
+        syserr("getaddrinfo");
+    }
+}
+
+void get_address(struct sockaddr_in *address, in_addr_t s_addr, uint16_t port)
+{
+    (*address).sin_family = AF_INET;
+    (*address).sin_addr.s_addr = s_addr;  // address IP / listening on all interfaces
+    (*address).sin_port = htons(port);
+}
+
 int socket_w(int domain, int type)
 {
     int sock = socket(domain, type, 0);
@@ -73,11 +97,4 @@ void close_w(int sock)
     if (close(sock) == -1) {
         syserr("close");
     }
-}
-
-void get_address(struct sockaddr_in *address, in_addr_t s_addr, uint16_t port)
-{
-    (*address).sin_family = AF_INET;
-    (*address).sin_addr.s_addr = s_addr;  // address IP / listening on all interfaces
-    (*address).sin_port = htons(port);
 }

@@ -17,42 +17,62 @@ int copy_file_to_buffer(FILE *file, char *buffer);
 
 int main(int argc, char *argv[])
 {
+    // validate
     uint16_t port;
     FILE *file;
     validate(argc, argv, &port, &file);
 
+    // allocate buffer
     char buffer[BUFFER_SIZE];
 
-    int len = copy_file_to_buffer(file, buffer);
+    // copy file to buffer
+    int message_len = copy_file_to_buffer(file, buffer);
 
+    // client address variables
     struct sockaddr_in client_address;
     socklen_t rcva_len = (socklen_t) sizeof(client_address);
     socklen_t snda_len = (socklen_t) sizeof(client_address);
 
+    // socket
     int sock = socket_w(AF_INET, SOCK_DGRAM);
 
+    // make address, listen on all interfaces
     struct sockaddr_in server_address;
     get_address(&server_address, INADDR_ANY, port);
 
+    // bind
     bind_w(sock, &server_address);
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
+
+    // listen to clients in infinite loop
     for (;;) {
+        // recvfrom
         ssize_t recv_len = recvfrom_w(sock, buffer, (size_t) BUFFER_OFFSET,
                                       &client_address, &rcva_len);
 
-        // TODO expect recv_len = 9, otherwise error
+        // ignore invalid (too short) datagrams
+        if (recv_len < BUFFER_OFFSET) {
+            fprintf(stderr, "Received an invalid datagram of length less than 9\n");
+            continue;
+        }
 
-        sendto_w(sock, buffer, len, &client_address, snda_len);
+        // sendto
+        sendto_w(sock, buffer, message_len, &client_address, snda_len);
     }
+
 #pragma clang diagnostic pop
+
 }
 
+/**
+ * Copies the file to buffer, starting at the offset. Error if file too long.
+ */
 int copy_file_to_buffer(FILE *file, char *buffer)
 {
     int i;
-    for (i = BUFFER_OFFSET; i < BUFFER_SIZE - 2; ++i) {
+    for (i = BUFFER_OFFSET; i < BUFFER_SIZE; ++i) {
         buffer[i] = (char) fgetc(file);
         if (feof(file)) {
             // file is assumed to have no NULL chars, but we insert one at the end
@@ -60,8 +80,8 @@ int copy_file_to_buffer(FILE *file, char *buffer)
             break;
         }
     }
-    if (i == BUFFER_SIZE - 1) {
-        fatal("File size greater than %d - %d - 1 bytes", BUFFER_SIZE, BUFFER_OFFSET);
+    if (i == BUFFER_SIZE) {
+        fatal("File size greater than %d - %d bytes", BUFFER_SIZE, BUFFER_OFFSET);
     }
     fclose(file);
 
