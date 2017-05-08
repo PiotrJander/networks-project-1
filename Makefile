@@ -1,4 +1,4 @@
-TARGET: bin/server bin/client
+all: directories bin/server bin/client
 
 CC	= gcc
 CFLAGS	= -Wall -O2
@@ -7,10 +7,13 @@ LFLAGS	= -Wall
 C_FILES=$(wildcard src/*.c)
 OBJ_FILES=$(addprefix bin/,$(notdir $(C_FILES:.c=.o)))
 
+.PHONY: directories
+directories: bin
+
 bin:
 	mkdir bin
 
-bin/%.o: bin src/%.c
+bin/%.o: src/%.c
 	$(CC) $(CC_FLAGS) -c -o $@ $<
 
 bin/server: bin/server.o
