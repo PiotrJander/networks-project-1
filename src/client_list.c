@@ -9,7 +9,12 @@
 #include <stdbool.h>
 #include "client_list.h"
 
-bool address_eq(const struct sockaddr_in *address, const Client *client);
+
+bool
+address_eq(const struct sockaddr_in *address, const Client *client);
+
+static time_t
+time_w();
 
 void client_list_make(ClientList *client_list, Client **clients, int len)
 {
@@ -34,7 +39,7 @@ void client_list_add(ClientList *client_list, struct sockaddr_in *address)
             free_slot_idx = i;
         } else if (address_eq(address, client)) {
             // returning client; update time
-            client->last_access = time(NULL);
+            client->last_access = time_w();
             return;
         } else if (!clients[oldest_client_idx] || client->last_access < clients[oldest_client_idx]->last_access) {
             // this is the oldest client so far
@@ -46,24 +51,26 @@ void client_list_add(ClientList *client_list, struct sockaddr_in *address)
         // no empty slots; replace oldest client with the new one
         int idx = oldest_client_idx;
         clients[idx]->address = *address;
-        clients[idx]->last_access = time(NULL);
+        clients[idx]->last_access = time_w();
     } else {
         // use the empty slot
         int idx = free_slot_idx;
         clients[idx] = malloc(sizeof(Client));
         clients[idx]->address = *address;
-        clients[idx]->last_access = time(NULL);
+        clients[idx]->last_access = time_w();
     }
 }
 
 bool address_eq(const struct sockaddr_in *address, const Client *client)
 { return client->address.sin_port == address->sin_port && client->address.sin_addr.s_addr == address->sin_addr.s_addr; }
 
-
-
-
-
-
-
-
-
+static time_t time_w()
+{
+    time_t ret = time(NULL);
+    if (ret == -1) {
+        perror("time");
+        exit(1);
+    } else {
+        return ret;
+    }
+}

@@ -16,12 +16,12 @@ typedef struct cqueue {
 void cqueue_new(CQueue *q, const size_t queue_len, const size_t element_len, char **queue);
 
 void
-c_enqueue(CQueue *q, char *src);
+cqueue_enqueue(CQueue *q, char *src);
 
 void
-c_dequeue(CQueue *q, char *dst);
+cqueue_dequeue(CQueue *q, char *dst);
 
 int
-c_is_empty(CQueue *q);
+cqueue_is_empty(CQueue *q);
 
 #endif //ZADANIE1_CIRCULAR_QUEUE_H

@@ -16,7 +16,7 @@ void cqueue_new(CQueue *q, const size_t queue_len, const size_t element_len, cha
     q->write_counter = 0;
 }
 
-void c_enqueue(CQueue *q, char *src)
+void cqueue_enqueue(CQueue *q, char *src)
 {
     char *element = malloc(sizeof(char) * q->element_len);
     strncpy(element, src, q->element_len);
@@ -24,7 +24,7 @@ void c_enqueue(CQueue *q, char *src)
     q->write_counter = (q->write_counter + 1) % q->queue_len;
 }
 
-void c_dequeue(CQueue *q, char *dst)
+void cqueue_dequeue(CQueue *q, char *dst)
 {
     char *element = q->queue[q->read_counter];
     strncpy(dst, element, q->element_len);
@@ -32,7 +32,7 @@ void c_dequeue(CQueue *q, char *dst)
     q->read_counter = (q->read_counter + 1) % q->queue_len;
 }
 
-int c_is_empty(CQueue *q)
+int cqueue_is_empty(CQueue *q)
 {
     return q->read_counter == q->write_counter;
 }

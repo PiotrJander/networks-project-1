@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <poll.h>
+#include <time.h>
 
 #include "socket_wrappers.h"
 #include "err.h"
@@ -21,6 +22,9 @@ static const int CLIENTS_MAX = 2;
 void validate(int argc, char **argv, uint16_t *port, FILE **file);
 
 int copy_file_to_buffer(FILE *file, char *buffer);
+
+static time_t
+time_w();
 
 int main(int argc, char *argv[])
 {
@@ -39,7 +43,7 @@ int main(int argc, char *argv[])
     cqueue_new(&cqueue, QUEUE_LEN, SMALL_BUFFER, (char **) cqueue_queue);
 
     // prepare the client list
-    Client clients[CLIENTS_MAX];
+    Client *clients[CLIENTS_MAX];
     ClientList client_list;
     client_list_make(&client_list, (Client **) &clients, CLIENTS_MAX);
 
@@ -82,16 +86,26 @@ int main(int argc, char *argv[])
 
             if (recv_len == SMALL_BUFFER) {
                 // copy to queue here
-                c_enqueue(&cqueue, small_buffer);
+                cqueue_enqueue(&cqueue, small_buffer);
             } else {
                 // ignore invalid (too short) datagrams
                 fprintf(stderr, "Received an invalid datagram of length less than 9\n");
             }
+        }
 
-//            if (server[0].revents & POLLOUT) {
-//                // we can write
-//                sendto_w(server[0].fd, buffer, message_len, &client_address, snda_len);
-//            }
+        if (!cqueue_is_empty(&cqueue)) {
+            // send one datagram from the queue to all recent clients
+
+            // dequeue (copy) one datagram
+            cqueue_dequeue(&cqueue, (char *) &big_buffer);
+
+            for (int j = 0; j < CLIENTS_MAX; ++j) {
+                // for each non-null client
+                if (clients[j] && (clients[j]->last_access > time_w() - 2 * 60 * 1000)) {
+                    // if recent
+                    sendto_w(server[0].fd, big_buffer, message_len, &clients[j]->address, snda_len);
+                }
+            }
         }
 
         // reset the revents field
@@ -124,6 +138,17 @@ int copy_file_to_buffer(FILE *file, char *buffer)
 
     // constant length of message in the buffer is i + 1
     return i + 1;
+}
+
+static time_t time_w()
+{
+    time_t ret = time(NULL);
+    if (ret == -1) {
+        perror("time");
+        exit(1);
+    } else {
+        return ret;
+    }
 }
 
 void validate(int argc, char **argv, uint16_t *port, FILE **file)
