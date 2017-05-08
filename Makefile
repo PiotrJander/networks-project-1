@@ -10,7 +10,7 @@ OBJ_FILES=$(addprefix bin/,$(notdir $(C_FILES:.c=.o)))
 bin:
 	mkdir bin
 
-bin/%.o: src/%.c
+bin/%.o: bin src/%.c
 	$(CC) $(CC_FLAGS) -c -o $@ $<
 
 bin/server: bin/server.o
