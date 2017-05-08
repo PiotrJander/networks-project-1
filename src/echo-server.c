@@ -30,9 +30,11 @@ int main(int argc, char *argv[])
     char big_buffer[BIG_BUFFER];
 
     // prepare the queue
-    char *cqueue_queue[QUEUE_LEN];
+//    char *cqueue_queue[QUEUE_LEN];
+    char *cqueue_queue[2];
     CQueue cqueue;
-    cqueue_new(&cqueue, QUEUE_LEN, SMALL_BUFFER, (char **) cqueue_queue);
+//    cqueue_new(&cqueue, QUEUE_LEN, SMALL_BUFFER, (char **) cqueue_queue);
+    cqueue_new(&cqueue, 2, SMALL_BUFFER, (char **) cqueue_queue);
 
     // copy file to buffer
     int message_len = copy_file_to_buffer(file, big_buffer);
@@ -69,11 +71,11 @@ int main(int argc, char *argv[])
             ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, SMALL_BUFFER,
                                           &client_address, &rcva_len);
 
-            // ignore invalid (too short) datagrams
             if (recv_len == SMALL_BUFFER) {
                 // copy to queue here
                 c_enqueue(&cqueue, small_buffer);
             } else {
+                // ignore invalid (too short) datagrams
                 fprintf(stderr, "Received an invalid datagram of length less than 9\n");
             }
 
