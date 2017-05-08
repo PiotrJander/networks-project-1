@@ -21,7 +21,7 @@ void client_list_make(ClientList *client_list, Client **clients, int len)
     }
 }
 
-void add_client(ClientList *client_list, struct sockaddr_in *address)
+void client_list_add(ClientList *client_list, struct sockaddr_in *address)
 {
     Client **clients = client_list->clients;
     int oldest_client_idx = 0;
@@ -36,7 +36,7 @@ void add_client(ClientList *client_list, struct sockaddr_in *address)
             // returning client; update time
             client->last_access = time(NULL);
             return;
-        } else if (client->last_access < clients[oldest_client_idx]->last_access) {
+        } else if (!clients[oldest_client_idx] || client->last_access < clients[oldest_client_idx]->last_access) {
             // this is the oldest client so far
             oldest_client_idx = i;
         }

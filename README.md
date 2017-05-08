@@ -10,6 +10,8 @@ todo:
 * client limit 42
 * poll itself might block, but writes and reads on the socket must be non-blocking
 * Wysyłanie datagramów nie powinno blokować ich odbierania
+* test that when client send sth again, its time is updated
+    but entry not duplicated
 
 
 
@@ -26,5 +28,6 @@ if datagram being sent or datagram in queue
 
 
 super simple:
+* enable saving client addresses in server
 * debug and test adding clients
 

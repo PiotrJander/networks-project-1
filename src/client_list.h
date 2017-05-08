@@ -19,6 +19,6 @@ typedef struct client_list {
 
 void client_list_make(ClientList *client_list, Client **clients, int len);
 
-void add_client(ClientList *client_list, struct sockaddr_in *address);
+void client_list_add(ClientList *client_list, struct sockaddr_in *address);
 
 #endif //ZADANIE1_CLIENT_LIST_H

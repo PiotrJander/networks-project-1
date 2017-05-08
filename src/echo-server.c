@@ -9,10 +9,14 @@
 #include "socket_wrappers.h"
 #include "err.h"
 #include "circular_queue.h"
+#include "client_list.h"
 
 static const size_t BIG_BUFFER = 65535;
 static const size_t SMALL_BUFFER = sizeof(uint64_t) + sizeof(char);  // 9
-static const size_t QUEUE_LEN = 4096;
+//static const int QUEUE_LEN = 4096;
+static const int QUEUE_LEN = 3;
+//static const int CLIENTS_MAX = 42;
+static const int CLIENTS_MAX = 2;
 
 void validate(int argc, char **argv, uint16_t *port, FILE **file);
 
@@ -30,11 +34,14 @@ int main(int argc, char *argv[])
     char big_buffer[BIG_BUFFER];
 
     // prepare the queue
-//    char *cqueue_queue[QUEUE_LEN];
-    char *cqueue_queue[2];
+    char *cqueue_queue[QUEUE_LEN];
     CQueue cqueue;
-//    cqueue_new(&cqueue, QUEUE_LEN, SMALL_BUFFER, (char **) cqueue_queue);
-    cqueue_new(&cqueue, 2, SMALL_BUFFER, (char **) cqueue_queue);
+    cqueue_new(&cqueue, QUEUE_LEN, SMALL_BUFFER, (char **) cqueue_queue);
+
+    // prepare the client list
+    Client clients[CLIENTS_MAX];
+    ClientList client_list;
+    client_list_make(&client_list, (Client **) &clients, CLIENTS_MAX);
 
     // copy file to buffer
     int message_len = copy_file_to_buffer(file, big_buffer);
@@ -70,6 +77,8 @@ int main(int argc, char *argv[])
             // TODO write to buffer
             ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, SMALL_BUFFER,
                                           &client_address, &rcva_len);
+
+            client_list_add(&client_list, &client_address);
 
             if (recv_len == SMALL_BUFFER) {
                 // copy to queue here
