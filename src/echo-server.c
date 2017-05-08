@@ -8,15 +8,15 @@
 
 #include "socket_wrappers.h"
 #include "err.h"
+#include "circular_queue.h"
 
-static const int BUFFER_SIZE = 65535;
-static const int BUFFER_OFFSET = sizeof(uint64_t) + sizeof(char);  // 9
+static const size_t BIG_BUFFER = 65535;
+static const size_t SMALL_BUFFER = sizeof(uint64_t) + sizeof(char);  // 9
+static const size_t QUEUE_LEN = 4096;
 
 void validate(int argc, char **argv, uint16_t *port, FILE **file);
 
 int copy_file_to_buffer(FILE *file, char *buffer);
-
-int poll_w(struct pollfd *server, nfds_t nfds, int timeout);
 
 int main(int argc, char *argv[])
 {
@@ -25,11 +25,17 @@ int main(int argc, char *argv[])
     FILE *file;
     validate(argc, argv, &port, &file);
 
-    // allocate buffer
-    char buffer[BUFFER_SIZE];
+    // allocate buffers
+    char small_buffer[SMALL_BUFFER];
+    char big_buffer[BIG_BUFFER];
+
+    // prepare the queue
+    char cqueue_queue[SMALL_BUFFER][QUEUE_LEN];
+    CQueue cqueue;
+    cqueue_new(&cqueue, QUEUE_LEN, SMALL_BUFFER, (char **) cqueue_queue);
 
     // copy file to buffer
-    int message_len = copy_file_to_buffer(file, buffer);
+    int message_len = copy_file_to_buffer(file, big_buffer);
 
     // client address variables
     struct sockaddr_in client_address;
@@ -39,7 +45,8 @@ int main(int argc, char *argv[])
     // poll array
     struct pollfd server[0];
     server[0].fd = socket_w(AF_INET, SOCK_DGRAM);  // socket
-    server[0].events = POLLIN | POLLOUT;
+//    server[0].events = POLLIN | POLLOUT;
+    server[0].events = POLLIN;
     server[0].revents = 0;
 
     // make address, listen on all interfaces
@@ -58,33 +65,31 @@ int main(int argc, char *argv[])
 
         if (server[0].revents & POLLIN) {
             // we can read
-            ssize_t recv_len = recvfrom_w(server[0].fd, buffer, (size_t) BUFFER_OFFSET,
+            // TODO write to buffer
+            ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, SMALL_BUFFER,
                                           &client_address, &rcva_len);
 
             // ignore invalid (too short) datagrams
-            if (recv_len < BUFFER_OFFSET) {
+            if (recv_len == SMALL_BUFFER) {
+                // copy to queue here
+                c_enqueue(&cqueue, small_buffer);
+            } else {
                 fprintf(stderr, "Received an invalid datagram of length less than 9\n");
-                continue;
             }
 
-            if (server[0].revents & POLLOUT) {
-                // we can write
-                sendto_w(server[0].fd, buffer, message_len, &client_address, snda_len);
-            }
+//            if (server[0].revents & POLLOUT) {
+//                // we can write
+//                sendto_w(server[0].fd, buffer, message_len, &client_address, snda_len);
+//            }
         }
+
+        // reset the revents field
+        server[0].revents = 0;
 
     }
 
 #pragma clang diagnostic pop
 
-}
-
-int poll_w(struct pollfd *server, nfds_t nfds, int timeout)
-{
-    int ret = poll(server, nfds, timeout);
-    if (ret < 0)
-        perror("poll");
-    return ret;
 }
 
 /**
@@ -93,7 +98,7 @@ int poll_w(struct pollfd *server, nfds_t nfds, int timeout)
 int copy_file_to_buffer(FILE *file, char *buffer)
 {
     int i;
-    for (i = BUFFER_OFFSET; i < BUFFER_SIZE; ++i) {
+    for (i = SMALL_BUFFER; i < BIG_BUFFER; ++i) {
         buffer[i] = (char) fgetc(file);
         if (feof(file)) {
             // file is assumed to have no NULL chars, but we insert one at the end
@@ -101,8 +106,8 @@ int copy_file_to_buffer(FILE *file, char *buffer)
             break;
         }
     }
-    if (i == BUFFER_SIZE) {
-        fatal("File size greater than %d - %d bytes", BUFFER_SIZE, BUFFER_OFFSET);
+    if (i == BIG_BUFFER) {
+        fatal("File size greater than %d - %d bytes", BIG_BUFFER, SMALL_BUFFER);
     }
     fclose(file);
 

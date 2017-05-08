@@ -19,6 +19,8 @@ void get_address(struct sockaddr_in *address, in_addr_t s_addr, uint16_t port);
 
 int socket_w(int domain, int type);
 
+int poll_w(struct pollfd *server, nfds_t nfds, int timeout);
+
 void bind_w(int sock, struct sockaddr_in *server_address);
 
 void connect_w(int sock, struct sockaddr_in *my_address);

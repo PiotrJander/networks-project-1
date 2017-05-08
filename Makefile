@@ -10,7 +10,7 @@ OBJ_FILES=$(addprefix bin/,$(notdir $(C_FILES:.c=.o)))
 bin/%.o: src/%.c
 	$(CC) $(CC_FLAGS) -c -o $@ $<
 
-bin/echo-server: bin/echo-server.o bin/err.o bin/socket_wrappers.o
+bin/echo-server: bin/echo-server.o bin/err.o bin/socket_wrappers.o bin/circular_queue.o
 	$(CC) $(LFLAGS) $^ -o $@
 
 bin/echo-client: bin/echo-client.o bin/err.o bin/socket_wrappers.o

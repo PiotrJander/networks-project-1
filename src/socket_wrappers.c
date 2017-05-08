@@ -2,6 +2,7 @@
 // Created by Piotr Jander on 06.05.2017.
 //
 
+#include <poll.h>
 #include "socket_wrappers.h"
 
 //#include <unistd.h>
@@ -39,6 +40,14 @@ int socket_w(int domain, int type)
     if (sock < 0)
         syserr("socket");
     return sock;
+}
+
+int poll_w(struct pollfd *server, nfds_t nfds, int timeout)
+{
+    int ret = poll(server, nfds, timeout);
+    if (ret < 0)
+        perror("poll");
+    return ret;
 }
 
 void bind_w(int sock, struct sockaddr_in *server_address)
