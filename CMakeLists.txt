@@ -3,6 +3,24 @@ project(zadanie1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES src/echo-client.c src/echo-server.c src/err.h src/err.c src/socket_wrappers.c src/socket_wrappers.h)
-add_executable(server src/echo-server.c src/err.h src/err.c src/socket_wrappers.h src/socket_wrappers.c src/circular_queue.c src/circular_queue.h src/client_list.c src/client_list.h)
-add_executable(client src/echo-client.c src/err.h src/err.c src/socket_wrappers.h src/socket_wrappers.c)
+set(
+        SOURCE_FILES
+        src/client.c
+        src/server.c
+)
+
+add_executable(
+        server
+        src/server.c
+        src/err.h
+        src/socket_wrappers.h
+        src/circular_queue.h
+        src/client_list.h
+)
+
+add_executable(
+        client
+        src/client.c
+        src/err.h
+        src/socket_wrappers.h
+)

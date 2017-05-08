@@ -1,4 +1,4 @@
-TARGET: bin/echo-server bin/echo-client
+TARGET: bin/server bin/client
 
 CC	= gcc
 CFLAGS	= -Wall -O2
@@ -10,24 +10,19 @@ OBJ_FILES=$(addprefix bin/,$(notdir $(C_FILES:.c=.o)))
 bin/%.o: src/%.c
 	$(CC) $(CC_FLAGS) -c -o $@ $<
 
-bin/echo-server: bin/echo-server.o bin/err.o bin/socket_wrappers.o bin/circular_queue.o bin/client_list.o
+bin/server: bin/server.o
 	$(CC) $(LFLAGS) $^ -o $@
 
-bin/echo-client: bin/echo-client.o bin/err.o bin/socket_wrappers.o
+bin/client: bin/client.o
 	$(CC) $(LFLAGS) $^ -o $@
 
 .PHONY: server
-server: bin/echo-server
-	bin/echo-server 10001 foo.txt
+server: bin/server
+	bin/server 10001 foo.txt
 
 .PHONY: client
-client: bin/echo-client
-	bin/echo-client 1234 a localhost 10001
-
-# .PHONY: test
-# test: echo-server echo-client
-#    bin/echo-server
-#    bin/echo-client localhost 10001 hello world
+client: bin/client
+	bin/client 1234 a localhost 10001
 
 .PHONY: clean TARGET
 clean:

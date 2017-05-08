@@ -14,3 +14,4 @@ before submitting
 * why no response??
 * clients list pointer
 * also move impl to headers now
+* TODO deal with time_w

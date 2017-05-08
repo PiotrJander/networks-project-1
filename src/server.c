@@ -2,13 +2,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+//#include <string.h>
+//#include <unistd.h>
 #include <poll.h>
-#include <time.h>
+//#include <time.h>
 
 #include "socket_wrappers.h"
-#include "err.h"
+//#include "err.h"
 #include "circular_queue.h"
 #include "client_list.h"
 
@@ -22,9 +22,6 @@ static const int CLIENTS_MAX = 2;
 void validate(int argc, char **argv, uint16_t *port, FILE **file);
 
 int copy_file_to_buffer(FILE *file, char *buffer);
-
-static time_t
-time_w();
 
 int main(int argc, char *argv[])
 {
@@ -138,17 +135,6 @@ int copy_file_to_buffer(FILE *file, char *buffer)
 
     // constant length of message in the buffer is i + 1
     return i + 1;
-}
-
-static time_t time_w()
-{
-    time_t ret = time(NULL);
-    if (ret == -1) {
-        perror("time");
-        exit(1);
-    } else {
-        return ret;
-    }
 }
 
 void validate(int argc, char **argv, uint16_t *port, FILE **file)
