@@ -11,6 +11,7 @@
 #include "socket_wrappers.h"
 
 #define htonll_(x) ((1==htonl(1)) ? (x) : ((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
+#define ntohll_(x) ((1==ntohl(1)) ? (x) : ((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
 
 static const size_t SEND_BUFFER_SIZE = sizeof(uint64_t) + sizeof(char);
 static const int RECV_BUFFER_SIZE = 65535;
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
         // parse timestamp
         uint64_t timestamp_rcv;
         memcpy(&timestamp_rcv, recv_buffer, sizeof(uint64_t));
-        timestamp_rcv = ntohll(timestamp_rcv);
+        timestamp_rcv = ntohll_(timestamp_rcv);
 
         // print message
         printf("%llu%s", timestamp_rcv, recv_buffer + sizeof(uint64_t));

@@ -7,6 +7,9 @@ LFLAGS	= -Wall
 C_FILES=$(wildcard src/*.c)
 OBJ_FILES=$(addprefix bin/,$(notdir $(C_FILES:.c=.o)))
 
+bin:
+    mkdir bin
+
 bin/%.o: src/%.c
 	$(CC) $(CC_FLAGS) -c -o $@ $<
 
