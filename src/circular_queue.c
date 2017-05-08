@@ -3,6 +3,7 @@
 //
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "circular_queue.h"
 
@@ -17,13 +18,17 @@ void cqueue_new(CQueue *q, const size_t queue_len, const size_t element_len, cha
 
 void c_enqueue(CQueue *q, char *src)
 {
-    strncpy(q->queue[q->write_counter], src, q->element_len);
+    char *element = malloc(sizeof(char) * q->element_len);
+    strncpy(element, src, q->element_len);
+    q->queue[q->write_counter] = element;
     q->write_counter = (q->write_counter + 1) % q->queue_len;
 }
 
 void c_dequeue(CQueue *q, char *dst)
 {
-    strncpy(dst, q->queue[q->read_counter], q->element_len);
+    char *element = q->queue[q->read_counter];
+    strncpy(dst, element, q->element_len);
+    free(element);
     q->read_counter = (q->read_counter + 1) % q->queue_len;
 }
 

@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     char big_buffer[BIG_BUFFER];
 
     // prepare the queue
-    char cqueue_queue[SMALL_BUFFER][QUEUE_LEN];
+    char *cqueue_queue[QUEUE_LEN];
     CQueue cqueue;
     cqueue_new(&cqueue, QUEUE_LEN, SMALL_BUFFER, (char **) cqueue_queue);
 

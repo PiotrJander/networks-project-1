@@ -44,3 +44,5 @@ for test, debug with small queue like 3
 
 ok, looks ready, try with debug now
 
+ok now on enqueue we need to malloc, on dequeue free
+
