@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -8,6 +9,8 @@
 
 #include "err.h"
 #include "socket_wrappers.h"
+
+#define htonll_(x) ((1==htonl(1)) ? (x) : ((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
 
 static const size_t SEND_BUFFER_SIZE = sizeof(uint64_t) + sizeof(char);
 static const int RECV_BUFFER_SIZE = 65535;
@@ -40,7 +43,7 @@ int main(int argc, char *argv[])
 
     // write data to buffer
     char send_buffer[SEND_BUFFER_SIZE];
-    uint64_t timestamp_n = htonll(timestamp_h);
+    uint64_t timestamp_n = htonll_(timestamp_h);
     memcpy(send_buffer, &timestamp_n, sizeof(uint64_t));
     send_buffer[sizeof(uint64_t)] = character;
 
