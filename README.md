@@ -5,13 +5,21 @@ super simple:
 * create a bunch of clients in time intervals
 * see if server works based on client output
 * maybe debug the two client case now
-
-before submitting
 * uncomment real world cases
-* move to one file
+
+
 
 * don't broadcast to self
+* first reproduce bug, then fix it
+
+
 * why no response??
 * clients list pointer
-* also move impl to headers now
-* TODO deal with time_w
+
+
+
+strange, we send but client gets no response
+
+somewhere along the way we lost echo ability
+
+try reversing

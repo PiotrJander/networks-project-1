@@ -71,42 +71,58 @@ int main(int argc, char *argv[])
 
     while (1) {
 
-        int i = poll_w(server, 1, -1);
+        // recvfrom
+        ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, (size_t) SMALL_BUFFER,
+                                      &client_address, &rcva_len);
 
-        if (server[0].revents & POLLIN) {
-            // we can read
-            // TODO write to buffer
-            ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, SMALL_BUFFER,
-                                          &client_address, &rcva_len);
-
-            client_list_add(&client_list, &client_address);
-
-            if (recv_len == SMALL_BUFFER) {
-                // copy to queue here
-                cqueue_enqueue(&cqueue, small_buffer);
-            } else {
-                // ignore invalid (too short) datagrams
-                fprintf(stderr, "Received an invalid datagram of length less than 9\n");
-            }
+        // ignore invalid (too short) datagrams
+        if (recv_len < SMALL_BUFFER) {
+            fprintf(stderr, "Received an invalid datagram of length less than 9\n");
+            continue;
         }
 
-        if (!cqueue_is_empty(&cqueue)) {
-            // send one datagram from the queue to all recent clients
+        // sendto
+        sendto_w(server[0].fd, small_buffer, message_len, &client_address, snda_len);
 
-            // dequeue (copy) one datagram
-            cqueue_dequeue(&cqueue, (char *) &big_buffer);
-
-            for (int j = 0; j < CLIENTS_MAX; ++j) {
-                // for each non-null client
-                if (clients[j] && (clients[j]->last_access > time_w() - 2 * 60 * 1000)) {
-                    // if recent
-                    sendto_w(server[0].fd, big_buffer, message_len, &clients[j]->address, snda_len);
-                }
-            }
-        }
-
-        // reset the revents field
-        server[0].revents = 0;
+//        int i = poll_w(server, 1, -1);
+//
+//        if (server[0].revents & POLLIN) {
+//            // we can read
+//            // TODO write to buffer
+//            ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, SMALL_BUFFER,
+//                                          &client_address, &rcva_len);
+//
+//            client_list_add(&client_list, &client_address);
+//
+//            if (recv_len == SMALL_BUFFER) {
+//                // copy to queue here
+//                cqueue_enqueue(&cqueue, small_buffer);
+//            } else {
+//                // ignore invalid (too short) datagrams
+//                fprintf(stderr, "Received an invalid datagram of length less than 9\n");
+//            }
+//        }
+//
+//        if (!cqueue_is_empty(&cqueue)) {
+//            // send one datagram from the queue to all recent clients
+//
+//            // dequeue (copy) one datagram
+//            cqueue_dequeue(&cqueue, (char *) &big_buffer);
+//
+//            // echo
+//            sendto_w(server[0].fd, big_buffer, message_len, &client_address, snda_len);
+//
+////            for (int j = 0; j < CLIENTS_MAX; ++j) {
+////                // for each non-null client
+////                if (clients[j] && (clients[j]->last_access > time_w() - 2 * 60 * 1000)) {
+////                    // if recent
+////                    sendto_w(server[0].fd, big_buffer, message_len, &clients[j]->address, snda_len);
+////                }
+////            }
+//        }
+//
+//        // reset the revents field
+//        server[0].revents = 0;
 
     }
 
