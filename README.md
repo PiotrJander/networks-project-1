@@ -12,3 +12,5 @@ before submitting
 
 * don't broadcast to self
 * why no response??
+* clients list pointer
+* also move impl to headers now
