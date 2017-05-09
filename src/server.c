@@ -108,6 +108,14 @@ int main(int argc, char *argv[])
             continue;
         }
 
+        if (server[0].revents & POLLNVAL) {
+            int error = 0;
+            socklen_t errlen = sizeof(error);
+            getsockopt(server[0].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen);
+            fprintf(stderr, "Poll nval: %d\n", error);
+            continue;
+        }
+
         if ((server[0].revents & POLLOUT) && !cqueue_is_empty(&cqueue)) {
             // send one datagram from the queue to all recent clients
 
