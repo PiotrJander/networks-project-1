@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
     while (1) {
 
-        // simple echo
+//        // simple echo
 //        int i = poll_w(server, 1, -1);
 //
 //        if (server[0].revents & POLLIN) {
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         if (server[0].revents & POLLIN) {
             // we can read
             // TODO write to buffer
-            ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, SMALL_BUFFER,
+            ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, (size_t) SMALL_BUFFER,
                                           &client_address, &rcva_len);
 
             client_list_add(&client_list, &client_address);
