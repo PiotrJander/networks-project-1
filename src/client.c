@@ -10,9 +10,6 @@
 #include "err.h"
 #include "socket_wrappers.h"
 
-#define htonll_(x) ((1==htonl(1)) ? (x) : ((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
-#define ntohll_(x) ((1==ntohl(1)) ? (x) : ((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
-
 static const size_t SEND_BUFFER_SIZE = sizeof(uint64_t) + sizeof(char);
 static const int RECV_BUFFER_SIZE = 65535;
 static const uint16_t DEFAULT_PORT = (uint16_t) 20160;

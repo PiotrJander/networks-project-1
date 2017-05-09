@@ -71,27 +71,6 @@ int main(int argc, char *argv[])
 
     while (1) {
 
-//        // simple echo
-//        int i = poll_w(server, 1, -1);
-//
-//        if (server[0].revents & POLLIN) {
-//            // we can read
-//            ssize_t recv_len = recvfrom_w(server[0].fd, small_buffer, (size_t) SMALL_BUFFER,
-//                                          &client_address, &rcva_len);
-//
-//            // ignore invalid (too short) datagrams
-//            if (recv_len < SMALL_BUFFER) {
-//                fprintf(stderr, "Received an invalid datagram of length less than 9\n");
-//                continue;
-//            }
-//
-//            if (server[0].revents & POLLOUT) {
-//                // we can write
-////                sendto_w(server[0].fd, small_buffer, message_len, &client_address, snda_len);
-//                sendto_w(server[0].fd, small_buffer, SMALL_BUFFER, &client_address, snda_len);
-//            }
-//        }
-
         int i = poll_w(server, 1, -1);
 
         if (server[0].revents & POLLIN) {
@@ -103,8 +82,18 @@ int main(int argc, char *argv[])
             client_list_add(&client_list, &client_address);
 
             if (recv_len == SMALL_BUFFER) {
-                // copy to queue here
-                cqueue_enqueue(&cqueue, small_buffer);
+                // parse timestamp
+                uint64_t timestamp_rcv;
+                memcpy(&timestamp_rcv, small_buffer, sizeof(uint64_t));
+                timestamp_rcv = ntohll_(timestamp_rcv);
+
+                if (timestamp_rcv >= 71728934400LL) {
+                    // invalid timestamp, ignore message
+                    fprintf(stderr, "Year is greater than 4242\n");
+                } else {
+                    // valid timestamp, copy to queue here
+                    cqueue_enqueue(&cqueue, small_buffer);
+                }
             } else {
                 // ignore invalid (too short) datagrams
                 fprintf(stderr, "Received an invalid datagram of length less than 9\n");
