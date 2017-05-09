@@ -44,8 +44,7 @@ int main(int argc, char *argv[])
 
     // write data to buffer
     char send_buffer[SEND_BUFFER_SIZE];
-//    uint64_t timestamp_n = htonll_(timestamp_h);
-    uint64_t timestamp_n = htonll(timestamp_h);
+    uint64_t timestamp_n = htonll_(timestamp_h);
     memcpy(send_buffer, &timestamp_n, sizeof(uint64_t));
     send_buffer[sizeof(uint64_t)] = character;
 
@@ -72,12 +71,10 @@ int main(int argc, char *argv[])
         // parse timestamp
         uint64_t timestamp_rcv;
         memcpy(&timestamp_rcv, recv_buffer, sizeof(uint64_t));
-//        timestamp_rcv = ntohll_(timestamp_rcv);
-        timestamp_rcv = ntohll(timestamp_rcv);
+        timestamp_rcv = ntohll_(timestamp_rcv);
 
         // print message
-        printf("%llu%s\n", timestamp_rcv, recv_buffer + sizeof(uint64_t));
-//        printf("%llu%c %s\n", timestamp_rcv, recv_buffer[sizeof(uint64_t)], recv_buffer + SEND_BUFFER_SIZE);
+        printf("%llu%c %s\n", timestamp_rcv, recv_buffer[sizeof(uint64_t)], recv_buffer + SEND_BUFFER_SIZE);
     }
 
 #pragma clang diagnostic pop
