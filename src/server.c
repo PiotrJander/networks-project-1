@@ -100,7 +100,12 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (!cqueue_is_empty(&cqueue)) {
+        if ((server[0].revents & POLLERR) || (server[0].revents & POLLNVAL)) {
+            fprintf(stderr, "Poll error\n");
+            continue;
+        }
+
+        if ((server[0].revents & POLLOUT) && !cqueue_is_empty(&cqueue)) {
             // send one datagram from the queue to all recent clients
 
             // dequeue (copy) one datagram
