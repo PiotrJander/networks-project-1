@@ -16,8 +16,8 @@ static const int BIG_BUFFER = 65535;
 static const int SMALL_BUFFER = sizeof(uint64_t) + sizeof(char);  // 9
 static const int QUEUE_LEN = 4096;
 //static const int QUEUE_LEN = 3;
-static const int CLIENTS_MAX = 42;
-//static const int CLIENTS_MAX = 2;
+//static const int CLIENTS_MAX = 42;
+static const int CLIENTS_MAX = 2;
 
 void validate(int argc, char **argv, uint16_t *port, FILE **file);
 
