@@ -100,8 +100,11 @@ int main(int argc, char *argv[])
             }
         }
 
-        if ((server[0].revents & POLLERR) || (server[0].revents & POLLNVAL)) {
-            fprintf(stderr, "Poll error\n");
+        if (server[0].revents & POLLERR) {
+            int error = 0;
+            socklen_t errlen = sizeof(error);
+            getsockopt(server[0].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen);
+            fprintf(stderr, "Poll error: %d\n", error);
             continue;
         }
 
